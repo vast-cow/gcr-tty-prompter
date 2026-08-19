@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gcr-tty-prompter"
+version = "0.1.0"
+description = "A TTY frontend for the GCR system prompter D-Bus protocol"
+requires-python = ">=3.11"
+dependencies = [
+  "dbus-next>=0.2.3,<1",
+]
+
+[project.scripts]
+gcr-tty-prompter-client = "gcr_tty_prompter.client:main"
+gcr-tty-prompter-server = "gcr_tty_prompter.server:main"
+gcr-tty-prompter-selftest = "gcr_tty_prompter.selftest:main"
+
+[tool.setuptools]
+packages = ["gcr_tty_prompter"]
