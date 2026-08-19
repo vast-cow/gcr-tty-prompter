@@ -81,6 +81,96 @@ and installs:
 The installer calls `org.freedesktop.DBus.ReloadConfig` when `busctl` is
 available.
 
+## Keyring lock/unlock test tools
+
+Two commands are included to exercise the Secret Service API and, for
+unlocking, drive the GCR prompt path end-to-end:
+
+```sh
+gcr-keyring-lock
+gcr-keyring-unlock
+```
+
+Both commands target the Secret Service `default` collection alias unless a
+different target is specified.
+
+Lock the default keyring:
+
+```sh
+gcr-keyring-lock
+```
+
+Unlock the default keyring:
+
+```sh
+gcr-keyring-unlock
+```
+
+If unlocking requires authentication, the command calls
+`org.freedesktop.Secret.Prompt.Prompt("")` and waits for the `Completed`
+signal. With `gcr-tty-prompter` enabled and its foreground server running,
+the resulting password request should therefore appear on the server TTY.
+
+Typical test sequence:
+
+```sh
+# terminal A
+gcr-tty-prompter-server -v
+
+# terminal B
+gcr-keyring-lock
+gcr-keyring-unlock
+```
+
+The unlock operation should look roughly like this on terminal A:
+
+```text
+== Unlock Login Keyring ==
+The application wants to access the keyring.
+Password:
+```
+
+The exact title/message are produced by GNOME Keyring and can differ by
+version and desktop/session context.
+
+A different Secret Service alias can be selected:
+
+```sh
+gcr-keyring-unlock --alias default
+gcr-keyring-lock --alias session
+```
+
+An explicit collection object path can also be used:
+
+```sh
+gcr-keyring-unlock \
+  --path /org/freedesktop/secrets/collection/login
+```
+
+To discover the collection behind the default alias manually:
+
+```sh
+busctl --user call \
+  org.freedesktop.secrets \
+  /org/freedesktop/secrets \
+  org.freedesktop.Secret.Service \
+  ReadAlias s default
+```
+
+Exit codes:
+
+```text
+0  collection's final Locked property matches the requested state
+1  operation failed or the final Locked property does not match
+2  interactive prompt was dismissed
+130 interrupted
+```
+
+`gcr-keyring-lock` may complete without any prompt. `gcr-keyring-unlock`
+may return a Prompt object; the command performs that prompt and waits for
+completion.
+
+
 ## Switch prompters without uninstalling
 
 The installation can remain on disk while the D-Bus default is switched.

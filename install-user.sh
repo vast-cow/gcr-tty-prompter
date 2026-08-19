@@ -23,6 +23,10 @@ ln -sf "$VENV/bin/gcr-tty-prompter-selftest" \
   "$BIN_DIR/gcr-tty-prompter-selftest"
 ln -sf "$VENV/bin/gcr-tty-prompter-mode" \
   "$BIN_DIR/gcr-tty-prompter-mode"
+ln -sf "$VENV/bin/gcr-keyring-unlock" \
+  "$BIN_DIR/gcr-keyring-unlock"
+ln -sf "$VENV/bin/gcr-keyring-lock" \
+  "$BIN_DIR/gcr-keyring-lock"
 
 cat > "$SERVICE" <<EOF
 [D-BUS Service]
@@ -50,6 +54,10 @@ Installed.
 
 3. In another terminal, check the current D-Bus owner:
    busctl --user status org.gnome.keyring.SystemPrompter
+
+4. Exercise GNOME Keyring through the Secret Service API:
+   $BIN_DIR/gcr-keyring-lock
+   $BIN_DIR/gcr-keyring-unlock
 
 Switch without uninstalling:
    $BIN_DIR/gcr-tty-prompter-mode disable   # use system/default prompter
