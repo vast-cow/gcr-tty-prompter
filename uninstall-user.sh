@@ -10,6 +10,7 @@ rm -f "$SERVICE"
 rm -f "$BIN_DIR/gcr-tty-prompter-client"
 rm -f "$BIN_DIR/gcr-tty-prompter-server"
 rm -f "$BIN_DIR/gcr-tty-prompter-selftest"
+rm -f "$BIN_DIR/gcr-tty-prompter-mode"
 rm -rf "$APP_DIR"
 
 if command -v busctl >/dev/null 2>&1; then

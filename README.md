@@ -81,6 +81,84 @@ and installs:
 The installer calls `org.freedesktop.DBus.ReloadConfig` when `busctl` is
 available.
 
+## Switch prompters without uninstalling
+
+The installation can remain on disk while the D-Bus default is switched.
+
+Use the system/default GCR prompter:
+
+```sh
+./disable-user.sh
+```
+
+or, after installation:
+
+```sh
+gcr-tty-prompter-mode disable
+```
+
+This removes only the **user D-Bus activation override**:
+
+```text
+~/.local/share/dbus-1/services/
+  org.gnome.keyring.SystemPrompter.service
+```
+
+The virtualenv, programs, configuration copy, and source remain installed.
+If the currently active D-Bus owner is recognized as
+`gcr-tty-prompter-client`, it is sent `SIGTERM`. The next request for
+`org.gnome.keyring.SystemPrompter` can then activate the distribution's
+normal `gcr-prompter`.
+
+Enable the TTY replacement again:
+
+```sh
+./enable-user.sh
+```
+
+or:
+
+```sh
+gcr-tty-prompter-mode enable
+```
+
+This recreates the user D-Bus activation override. If the currently active
+owner is recognized as the distribution's `gcr-prompter`, it is sent
+`SIGTERM`, so the next request can activate `gcr-tty-prompter-client`.
+
+The TTY side must still be running:
+
+```sh
+gcr-tty-prompter-server
+```
+
+Check both the configured mode and the currently running D-Bus owner with:
+
+```sh
+gcr-tty-prompter-mode status
+```
+
+Example states:
+
+```text
+Configured mode: system/default
+User service override: disabled
+Current D-Bus owner: none
+```
+
+or:
+
+```text
+Configured mode: gcr-tty-prompter
+User service override: enabled
+Current D-Bus owner: custom
+```
+
+The switch command deliberately does **not** kill an unrecognized process
+that happens to own `org.gnome.keyring.SystemPrompter`; it prints a warning
+instead.
+
+
 ## Self-test
 
 ```sh

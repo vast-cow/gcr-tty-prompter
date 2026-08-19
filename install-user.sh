@@ -21,6 +21,8 @@ ln -sf "$VENV/bin/gcr-tty-prompter-server" \
   "$BIN_DIR/gcr-tty-prompter-server"
 ln -sf "$VENV/bin/gcr-tty-prompter-selftest" \
   "$BIN_DIR/gcr-tty-prompter-selftest"
+ln -sf "$VENV/bin/gcr-tty-prompter-mode" \
+  "$BIN_DIR/gcr-tty-prompter-mode"
 
 cat > "$SERVICE" <<EOF
 [D-BUS Service]
@@ -49,7 +51,11 @@ Installed.
 3. In another terminal, check the current D-Bus owner:
    busctl --user status org.gnome.keyring.SystemPrompter
 
-If the original gcr-prompter still owns the name, release/terminate that
-old process first. The replacement client uses DO_NOT_QUEUE and will not
-silently wait behind the old owner.
+Switch without uninstalling:
+   $BIN_DIR/gcr-tty-prompter-mode disable   # use system/default prompter
+   $BIN_DIR/gcr-tty-prompter-mode enable    # use TTY prompter again
+   $BIN_DIR/gcr-tty-prompter-mode status
+
+The mode command safely terminates only recognized gcr-prompter owners.
+Unknown owners are never killed automatically.
 EOF
