@@ -39,14 +39,9 @@ def disabled_service_path() -> Path:
 
 
 def installed_client() -> Path:
-    # mode.py normally runs from the private venv installed by
-    # install-user.sh. Prefer the sibling console script.
-    sibling = Path(sys.executable).parent / "gcr-tty-prompter-client"
-    if sibling.exists():
-        return sibling
-
-    fallback = Path.home() / ".local/bin/gcr-tty-prompter-client"
-    return fallback
+    # Preserve the venv path rather than resolving the interpreter symlink
+    # to the system Python and selecting a different environment's client.
+    return Path(sys.executable).parent / "gcr-tty-prompter-client"
 
 
 def service_text(client: Path) -> str:
@@ -233,10 +228,10 @@ def write_enabled_service() -> Path:
     app_dir().mkdir(parents=True, exist_ok=True)
 
     client = installed_client()
-    if not client.exists():
+    if not client.is_file() or not os.access(client, os.X_OK):
         raise RuntimeError(
             f"replacement client not found: {client}\n"
-            "Run install-user.sh first."
+            "Install this project in this environment with: python -m pip install ."
         )
 
     target.write_text(service_text(client), encoding="utf-8")

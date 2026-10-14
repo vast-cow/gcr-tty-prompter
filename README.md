@@ -61,25 +61,41 @@ ldconfig -p | grep -E 'libgcr-(4|base-3)'
 
 ## Install
 
+Create a virtualenv at a location of your choice, activate it, and install
+this project from the repository root:
+
 ```sh
-./install-user.sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install .
 ```
 
-This creates a private virtualenv below:
+The project does not create or manage a virtualenv. `./install-user.sh` is
+an optional shortcut for installing into an already activated virtualenv.
+Installing the package does not enable the D-Bus override.
 
-```text
-~/.local/share/gcr-tty-prompter/venv
+Enable the TTY prompter explicitly:
+
+```sh
+gcr-tty-prompter-mode enable
 ```
 
-and installs:
+This creates the user D-Bus activation override:
 
 ```text
 ~/.local/share/dbus-1/services/
   org.gnome.keyring.SystemPrompter.service
 ```
 
-The installer calls `org.freedesktop.DBus.ReloadConfig` when `busctl` is
-available.
+`XDG_DATA_HOME`, if set, replaces `~/.local/share`. The override records the
+absolute path to the client in the virtualenv running the mode command.
+D-Bus activation therefore works without activating the virtualenv in the
+calling application. Keep that virtualenv at the same path while enabled;
+disable the override before moving or deleting it.
+
+For the commands below, activate the virtualenv in each terminal, or use
+the absolute path to the command under its `bin` directory. The commands
+are not linked into `~/.local/bin`.
 
 ## Keyring lock/unlock test tools
 
@@ -174,14 +190,11 @@ completion.
 ## Switch prompters without uninstalling
 
 The installation can remain on disk while the D-Bus default is switched.
+Run these commands from the virtualenv where the project is installed.
+The repository helpers `./enable-user.sh` and `./disable-user.sh` run the
+same operations using the current `python` environment.
 
 Use the system/default GCR prompter:
-
-```sh
-./disable-user.sh
-```
-
-or, after installation:
 
 ```sh
 gcr-tty-prompter-mode disable
@@ -194,19 +207,13 @@ This removes only the **user D-Bus activation override**:
   org.gnome.keyring.SystemPrompter.service
 ```
 
-The virtualenv, programs, configuration copy, and source remain installed.
+The virtualenv, installed package, configuration copy, and source remain in place.
 If the currently active D-Bus owner is recognized as
 `gcr-tty-prompter-client`, it is sent `SIGTERM`. The next request for
 `org.gnome.keyring.SystemPrompter` can then activate the distribution's
 normal `gcr-prompter`.
 
 Enable the TTY replacement again:
-
-```sh
-./enable-user.sh
-```
-
-or:
 
 ```sh
 gcr-tty-prompter-mode enable
@@ -398,6 +405,19 @@ lifetime, so successive `PerformPrompt()` calls continue the same exchange.
 
 ## Uninstall
 
+From the virtualenv where the project is installed, disable the override
+before removing the package:
+
 ```sh
-./uninstall-user.sh
+gcr-tty-prompter-mode disable
+python -m pip uninstall gcr-tty-prompter
 ```
+
+Alternatively, `./uninstall-user.sh` performs both steps in the activated
+virtualenv. Neither method deletes the virtualenv or the source checkout.
+
+For an installation made by the old installer, first run the old
+virtualenv's `gcr-tty-prompter-mode disable`. After installing into your
+chosen virtualenv, run its `gcr-tty-prompter-mode enable` to update the
+activation path. The old virtualenv and its links in `~/.local/bin` are
+not automatically removed; remove them if they are no longer needed.
